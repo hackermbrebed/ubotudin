@@ -1,2 +1,2 @@
-pyrogram==2.0.106
-tqdm==4.66.4
+telethon
+asyncio
