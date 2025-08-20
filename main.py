@@ -84,10 +84,11 @@ async def gcast(event):
     failed_count = 0
     delay = 5
     task_id = generate_task_id()
-    owner_name = (await client.get_me()).first_name
+    owner_name = "Kaisar Udin" # Nama pemilik
+    owner_emoji = "👑" # Emoji mahkota
     
     # Pesan status awal yang juga akan menjadi reply
-    initial_message = await event.reply(append_watermark_to_message("Perintah Kaisar👑 sedang dijalankan"))
+    initial_message = await event.reply(append_watermark_to_message(f"Perintah {owner_name}{owner_emoji} sedang dijalankan"))
     
     groups = [dialog async for dialog in client.iter_dialogs() if dialog.is_group]
     failed_groups_list = []
@@ -112,15 +113,14 @@ async def gcast(event):
 
     failed_broadcasts[task_id] = failed_groups_list
 
-    # Final result message
+    # Final result message, now with the desired format
     message_text = (
         f"⚠️ Gcast Sukses\n"
         f"✅ Success: {sent_count}\n"
         f"❌ Failed: {failed_count}\n"
-        f"\n"
         f"✉️ Type: gcast\n"
         f"⚙️ Task ID: {task_id}\n"
-        f"👤 Owner: {owner_name}👑\n"
+        f"👤 Owner: {owner_name}{owner_emoji}\n"
         f"\n"
         f"Type .bc-error {task_id} to view failed in broadcast."
     )
@@ -137,7 +137,7 @@ async def view_failed_broadcast(event):
     
     command_parts = event.raw_text.split()
     if len(command_parts) < 2:
-        await event.reply(append_watermark_to_message("❌ Please specify a task ID. Example: .bc-error tp0gmx8h"))
+        await event.reply(append_watermark_to_message("❌ Please specify a task ID. Example: .bc-error Y7705Bhe"))
         return
     
     task_id = command_parts[1]
