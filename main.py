@@ -2,6 +2,8 @@ from telethon import TelegramClient, events
 import os
 import asyncio
 from datetime import datetime
+import random
+import string
 
 api_id = '29798494'
 api_hash = '53273c1de3e68a9ecdb90de2dcf46f6c'
@@ -21,6 +23,13 @@ blacklisted_groups = []
 
 # Watermark text
 WATERMARK_TEXT = ""
+
+# Dictionary to store failed broadcasts
+failed_broadcasts = {}
+
+# Function to generate a random Task ID
+def generate_task_id(length=8):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
 # Function to append watermark to a message
 def append_watermark_to_message(message):
@@ -59,7 +68,7 @@ def is_device_owner(sender_id):
     return sender_id == device_owner_id
 
 @client.on(events.NewMessage(pattern='.jawa', outgoing=True))
-async def promote(event):
+async def gcast(event):
     sender = await event.get_sender()
     if not is_device_owner(sender.id):
         await event.respond(append_watermark_to_message("❌ You are not authorized to use this command."))
@@ -73,13 +82,16 @@ async def promote(event):
     
     sent_count = 0
     failed_count = 0
-    delay = 5 # Set your desired delay time in seconds
-    status_message = await event.respond(append_watermark_to_message("Perintah Kaisar👑 sedang dijalankan"))
-
-    groups = [dialog for dialog in await client.get_dialogs() if dialog.is_group]
-    total_groups = len(groups)
-
-    loading_symbols = ["🙂", "🫡", "🙂‍↕️", "🔥"]
+    delay = 5
+    task_id = generate_task_id()
+    owner_name = (await client.get_me()).first_name
+    
+    initial_message = await event.respond(append_watermark_to_message("Perintah Kaisar👑 sedang dijalankan"))
+    
+    groups = [dialog async for dialog in client.iter_dialogs() if dialog.is_group]
+    
+    # Store failed groups for this task ID
+    failed_groups_list = []
 
     for dialog in groups:
         if dialog.id in blacklisted_groups:
@@ -88,21 +100,69 @@ async def promote(event):
             if reply_message.media:
                 media_path = await client.download_media(reply_message.media)
                 await client.send_file(dialog.id, media_path, caption=append_watermark_to_message(reply_message.message))
+                os.remove(media_path) # Clean up downloaded media
             else:
                 message_with_watermark = append_watermark_to_message(reply_message.message)
                 await client.send_message(dialog.id, message_with_watermark)
             sent_count += 1
-            progress = (sent_count / total_groups) * 100
-            
-            for remaining_time in range(delay, 0, -1):
-                loading_animation = "".join([symbol for symbol in loading_symbols[:sent_count % len(loading_symbols) + 1]])
-                await status_message.edit(append_watermark_to_message(f"Sabar Kaisarku👑"))
-                await asyncio.sleep(1)
+            await initial_message.edit(f"Perintah Kaisar👑... Sukses: {sent_count}, Gagal: {failed_count}")
+            await asyncio.sleep(delay)
         except Exception as e:
             failed_count += 1
-            print(f"Kegagalan {dialog.title}: {e}")
+            failed_groups_list.append(f"{dialog.title} (ID: {dialog.id})")
+            print(f"Kegagalan di {dialog.title}: {e}")
+
+    failed_broadcasts[task_id] = failed_groups_list
+
+    # Final result message
+    message_text = (
+        f"🔥 Perintah Kaisar👑 telah Sukses\n"
+        f"✅ Success: {sent_count}\n"
+        f"❌ Failed: {failed_count}\n"
+        f"\n"
+        f"⚔️ Type: penyerangan\n"
+        f"⚙️ Task ID: {task_id}\n"
+        f"👑 Pemegang Tahta: {owner_name}👑\n"
+        f"\n"
+        f"Type .bc-error {task_id} to view failed in broadcast."
+    )
     
-    await status_message.edit(append_watermark_to_message(f"✅ Perintah telah terlaksana wahai Kaisar👑\nBerhasil: {sent_count}\nGagal: {failed_count}"))
+    await event.respond(message_text)
+    await initial_message.delete()
+
+@client.on(events.NewMessage(pattern='.bc-error', outgoing=True))
+async def view_failed_broadcast(event):
+    sender = await event.get_sender()
+    if not is_device_owner(sender.id):
+        await event.respond(append_watermark_to_message("❌ You are not authorized to use this command."))
+        return
+    
+    command_parts = event.raw_text.split()
+    if len(command_parts) < 2:
+        await event.respond(append_watermark_to_message("❌ Please specify a task ID. Example: .bc-error tp0gmx8h"))
+        return
+    
+    task_id = command_parts[1]
+    if task_id not in failed_broadcasts:
+        await event.respond(append_watermark_to_message("❌ Invalid or expired task ID."))
+        return
+        
+    failed_list = failed_broadcasts[task_id]
+    if not failed_list:
+        await event.respond(append_watermark_to_message("✅ No failed groups for this broadcast!"))
+        return
+        
+    failed_text = "❌ Failed groups for broadcast:\n"
+    failed_text += "\n".join(failed_list)
+    
+    await event.respond(append_watermark_to_message(failed_text))
+    
+    # Clean up old failed broadcasts after a while
+    # This is a simple cleanup, for a more robust solution, use a proper database.
+    # We can delete it after 1 hour, for example.
+    await asyncio.sleep(3600)
+    if task_id in failed_broadcasts:
+        del failed_broadcasts[task_id]
 
 @client.on(events.NewMessage(pattern='.hancurkan', outgoing=True))
 async def blacklist_group(event):
@@ -117,6 +177,7 @@ async def blacklist_group(event):
         blacklisted_groups.append(group_id)
         await event.respond(append_watermark_to_message("💣 Grup ini sudah dihancurkan Kaisar👑, sekarang grup ini tidak akan dikirim gikes."))
     else:
+        blacklisted_groups.remove(group_id)
         await event.respond(append_watermark_to_message("☀️ Grup ini berhasil dibangun kembali Kaisar👑."))
 
 @client.on(events.NewMessage(pattern='.addqr', outgoing=True))
@@ -153,7 +214,7 @@ async def get_qr(event):
         for qr_file in qr_files:
             file_path = os.path.join(QR_CODE_DIR, qr_file)
             await client.send_file(event.chat_id, file_path, caption=append_watermark_to_message(f"🖼 QR Code: {qr_file}"))
-            await asyncio.sleep(1)  # Optional delay to avoid spamming
+            await asyncio.sleep(1) # Optional delay to avoid spamming
     except Exception as e:
         await event.respond(append_watermark_to_message("❌ Failed to send QR code."))
         print(f"Error sending QR code: {e}")
@@ -161,7 +222,7 @@ async def get_qr(event):
 @client.on(events.NewMessage(pattern='.afk', outgoing=True))
 async def afk(event):
     global afk_reason
-    afk_reason = event.message.message[len('/afk '):].strip()
+    afk_reason = event.message.message[len('.afk '):].strip()
     if not afk_reason:
         afk_reason = "AFK"
     await event.respond(append_watermark_to_message(f"💤 AFK mode enabled with reason: {afk_reason}"))
@@ -184,12 +245,13 @@ async def back(event):
 async def show_help(event):
     help_text = (
         "**Siap Kaisar Udin👑, saya siap menjalankan perintah:**\n"
-        ".jawa - Perintah ini untuk menjalankan penyerbuan ke grup.\n"
-        ".hancurkan - Perintah ini untuk menghancurkan grup.\n"
-        ".addqr - Perintah ini untuk membuat kode QR.\n"
-        ".getqr - Perintah ini untuk mendapatkan kode QR.\n"
+        ".gcast - Perintah ini untuk menjalankan penyerbuan ke grup.\n"
+        ".hancurkan - Perintah ini untuk menghancurkan grup (menambahkan ke daftar blokir).\n"
+        ".addqr - Perintah ini untuk menyimpan kode QR.\n"
+        ".getqr - Perintah ini untuk mendapatkan kode QR yang disimpan.\n"
         ".afk <reason> - Perintah ini untuk AFK.\n"
         ".back - Perintah ini untuk kembali dari AFK.\n"
+        ".bc-error <task_id> - Perintah ini untuk melihat daftar grup yang gagal dikirimi pesan.\n"
         ".cok - Ini adalah umpatan atas kesalahan saya, wahai Kaisar👑.\n"
         f"\n{WATERMARK_TEXT}"
     )
@@ -210,4 +272,3 @@ async def run_bot():
 
 if __name__ == '__main__':
     client.loop.run_until_complete(run_bot())
-            
