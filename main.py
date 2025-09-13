@@ -129,8 +129,8 @@ async def gcast(event):
         f"✉️ Type: Tempur\n"
         f"⚙️ Task ID: {task_id}\n"
         f"👤 Owner: {owner_name}{owner_emoji}\n"
-        f"🔑Type .bc-error {task_id} to view failed in broadcast\n"
-        f"<i>Powered by <b>Kaisar Udin👑.</b></i>"
+        f"🔑Type .bc-error {task_id} to view failed in broadcast\n\n"
+        f"<u><i>Powered by <b>Kaisar Udin👑.</b></i></u>"
     )
     
     await client.send_message(event.chat_id, format_as_blockquote(message_text), parse_mode='html')
