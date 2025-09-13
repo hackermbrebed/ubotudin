@@ -4,6 +4,10 @@ import asyncio
 from datetime import datetime
 import random
 import string
+import logging
+
+# Konfigurasi logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 api_id = '29798494'
 api_hash = '53273c1de3e68a9ecdb90de2dcf46f6c'
@@ -27,17 +31,21 @@ WATERMARK_TEXT = ""
 # Dictionary to store failed broadcasts
 failed_broadcasts = {}
 
-# Function to generate a random Task ID
+# Fungsi untuk menghasilkan Task ID acak
 def generate_task_id(length=8):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
-# Function to append watermark to a message
+# Fungsi untuk menambahkan watermark ke pesan
 def append_watermark_to_message(message):
     return f"{message}\n\n{WATERMARK_TEXT}"
 
+# Fungsi untuk memformat pesan menjadi quote block HTML
+def format_as_blockquote(message):
+    return f"<blockquote>{message}</blockquote>"
+
 async def main():
     await client.start()
-    print("Client Created")
+    logging.info("Client Created")
 
     global device_owner_id
 
@@ -45,24 +53,24 @@ async def main():
         phone_number = input("Please enter your phone number (with country code): ")
         try:
             await client.send_code_request(phone_number)
-            print("Code sent successfully!")
+            logging.info("Code sent successfully!")
         except Exception as e:
-            print(f"Error requesting code: {e}")
+            logging.error(f"Error requesting code: {e}")
             return
         
         code = input("Please enter the code you received: ")
         try:
             await client.sign_in(phone_number, code=code)
-            print("Signed in successfully!")
+            logging.info("Signed in successfully!")
         except Exception as e:
-            print(f"Error during sign in: {e}")
+            logging.error(f"Error during sign in: {e}")
             return
 
-    print("Client Authenticated")
+    logging.info("Client Authenticated")
 
     device_owner = await client.get_me()
     device_owner_id = device_owner.id
-    print(f"Device owner ID: {device_owner_id}")
+    logging.info(f"Device owner ID: {device_owner_id}")
 
 def is_device_owner(sender_id):
     return sender_id == device_owner_id
@@ -71,13 +79,13 @@ def is_device_owner(sender_id):
 async def gcast(event):
     sender = await event.get_sender()
     if not is_device_owner(sender.id):
-        await event.reply(append_watermark_to_message("❌ You are not authorized to use this command."))
-        print("Unauthorized access attempt blocked.")
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("❌ You are not authorized to use this command.")), parse_mode='html')
+        logging.info("Unauthorized access attempt blocked.")
         return
 
     reply_message = await event.get_reply_message()
     if not reply_message:
-        await event.reply(append_watermark_to_message("❌ Please reply to a message, image, or video to use as the promotion content."))
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("❌ Please reply to a message, image, or video to use as the promotion content.")), parse_mode='html')
         return
     
     sent_count = 0
@@ -87,8 +95,8 @@ async def gcast(event):
     owner_name = "Kaisar Udin" # Nama pemilik
     owner_emoji = "👑" # Emoji mahkota
     
-    # Pesan status awal yang juga akan menjadi reply
-    initial_message = await event.reply(append_watermark_to_message(f"Perintah {owner_name}{owner_emoji} sedang dijalankan"))
+    # Pesan status awal
+    initial_message = await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message(f"Perintah {owner_name}{owner_emoji} sedang dijalankan")), parse_mode='html')
     
     groups = [dialog async for dialog in client.iter_dialogs() if dialog.is_group]
     failed_groups_list = []
@@ -104,16 +112,16 @@ async def gcast(event):
             else:
                 await client.send_message(dialog.id, append_watermark_to_message(reply_message.message))
             sent_count += 1
-            await initial_message.edit(f"Mengirim gcast... Sukses: {sent_count}, Gagal: {failed_count}")
+            await initial_message.edit(format_as_blockquote(f"Mengirim gcast... Sukses: {sent_count}, Gagal: {failed_count}"), parse_mode='html')
             await asyncio.sleep(delay)
         except Exception as e:
             failed_count += 1
             failed_groups_list.append(f"{dialog.title} (ID: {dialog.id})")
-            print(f"Kegagalan di {dialog.title}: {e}")
+            logging.error(f"Kegagalan di {dialog.title}: {e}")
 
     failed_broadcasts[task_id] = failed_groups_list
 
-    # Final result message, now with the desired format
+    # Pesan hasil akhir
     message_text = (
         f"⚠️ Gcast Sukses\n"
         f"✅ Success: {sent_count}\n"
@@ -125,35 +133,35 @@ async def gcast(event):
         f"Type .bc-error {task_id} to view failed in broadcast."
     )
     
-    await event.reply(message_text)
+    await client.send_message(event.chat_id, format_as_blockquote(message_text), parse_mode='html')
     await initial_message.delete()
 
 @client.on(events.NewMessage(pattern='.bc-error', outgoing=True))
 async def view_failed_broadcast(event):
     sender = await event.get_sender()
     if not is_device_owner(sender.id):
-        await event.reply(append_watermark_to_message("❌ You are not authorized to use this command."))
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("❌ You are not authorized to use this command.")), parse_mode='html')
         return
     
     command_parts = event.raw_text.split()
     if len(command_parts) < 2:
-        await event.reply(append_watermark_to_message("❌ Please specify a task ID. Example: .bc-error Y7705Bhe"))
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("❌ Please specify a task ID. Example: .bc-error Y7705Bhe")), parse_mode='html')
         return
     
     task_id = command_parts[1]
     if task_id not in failed_broadcasts:
-        await event.reply(append_watermark_to_message("❌ Invalid or expired task ID."))
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("❌ Invalid or expired task ID.")), parse_mode='html')
         return
-        
+    
     failed_list = failed_broadcasts[task_id]
     if not failed_list:
-        await event.reply(append_watermark_to_message("✅ No failed groups for this broadcast!"))
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("✅ No failed groups for this broadcast!")), parse_mode='html')
         return
-        
+    
     failed_text = "❌ Failed groups for broadcast:\n"
     failed_text += "\n".join(failed_list)
     
-    await event.reply(append_watermark_to_message(failed_text))
+    await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message(failed_text)), parse_mode='html')
     
     await asyncio.sleep(3600)
     if task_id in failed_broadcasts:
@@ -163,46 +171,46 @@ async def view_failed_broadcast(event):
 async def blacklist_group(event):
     sender = await event.get_sender()
     if not is_device_owner(sender.id):
-        await event.reply(append_watermark_to_message("❌ You are not authorized to use this command."))
-        print("Unauthorized access attempt blocked.")
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("❌ You are not authorized to use this command.")), parse_mode='html')
+        logging.info("Unauthorized access attempt blocked.")
         return
 
     group_id = event.chat_id
     if group_id not in blacklisted_groups:
         blacklisted_groups.append(group_id)
-        await event.reply(append_watermark_to_message("💣 Grup ini sudah dihancurkan Kaisar👑, sekarang grup ini tidak akan dikirim gikes."))
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("💣 Grup ini sudah dihancurkan Kaisar👑, sekarang grup ini tidak akan dikirim gikes.")), parse_mode='html')
     else:
         blacklisted_groups.remove(group_id)
-        await event.reply(append_watermark_to_message("☀️ Grup ini berhasil dibangun kembali Kaisar👑."))
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("☀️ Grup ini berhasil dibangun kembali Kaisar👑.")), parse_mode='html')
 
 @client.on(events.NewMessage(pattern='.addqr', outgoing=True))
 async def add_qr(event):
     sender = await event.get_sender()
     if not is_device_owner(sender.id):
-        await event.reply(append_watermark_to_message("❌ You are not authorized to use this command."))
-        print("Unauthorized access attempt blocked.")
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("❌ You are not authorized to use this command.")), parse_mode='html')
+        logging.info("Unauthorized access attempt blocked.")
         return
 
     reply_message = await event.get_reply_message()
     if not reply_message or not reply_message.media:
-        await event.reply(append_watermark_to_message("❌ Please reply to a QR code image to use this command."))
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("❌ Please reply to a QR code image to use this command.")), parse_mode='html')
         return
 
     try:
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         file_path = os.path.join(QR_CODE_DIR, f"qr_{timestamp}.jpg")
         await client.download_media(reply_message.media, file_path)
-        await event.reply(append_watermark_to_message("✅ QR code added successfully!"))
-        print(f"QR code added with timestamp: {timestamp}")
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("✅ QR code added successfully!")), parse_mode='html')
+        logging.info(f"QR code added with timestamp: {timestamp}")
     except Exception as e:
-        await event.reply(append_watermark_to_message("❌ Failed to add QR code."))
-        print(f"Error: {e}")
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("❌ Failed to add QR code.")), parse_mode='html')
+        logging.error(f"Error: {e}")
 
 @client.on(events.NewMessage(pattern='.getqr', outgoing=True))
 async def get_qr(event):
     qr_files = sorted(os.listdir(QR_CODE_DIR))
     if not qr_files:
-        await event.reply(append_watermark_to_message("❌ No QR codes available."))
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("❌ No QR codes available.")), parse_mode='html')
         return
 
     try:
@@ -211,8 +219,8 @@ async def get_qr(event):
             await client.send_file(event.chat_id, file_path, caption=append_watermark_to_message(f"🖼 QR Code: {qr_file}"))
             await asyncio.sleep(1)
     except Exception as e:
-        await event.reply(append_watermark_to_message("❌ Failed to send QR code."))
-        print(f"Error sending QR code: {e}")
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("❌ Failed to send QR code.")), parse_mode='html')
+        logging.error(f"Error sending QR code: {e}")
 
 @client.on(events.NewMessage(pattern='.afk', outgoing=True))
 async def afk(event):
@@ -220,49 +228,49 @@ async def afk(event):
     afk_reason = event.message.message[len('.afk '):].strip()
     if not afk_reason:
         afk_reason = "AFK"
-    await event.reply(append_watermark_to_message(f"💤 AFK mode enabled with reason: {afk_reason}"))
-    print(f"AFK mode enabled with reason: {afk_reason}")
+    await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message(f"💤 AFK mode enabled with reason: {afk_reason}")), parse_mode='html')
+    logging.info(f"AFK mode enabled with reason: {afk_reason}")
 
 @client.on(events.NewMessage(incoming=True))
 async def handle_incoming(event):
     global afk_reason
     if afk_reason and event.mentioned:
-        await event.reply(append_watermark_to_message(f"🤖 I am currently AFK. Reason: {afk_reason}"))
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message(f"🤖 I am currently AFK. Reason: {afk_reason}")), parse_mode='html')
 
 @client.on(events.NewMessage(pattern='.back', outgoing=True))
 async def back(event):
     global afk_reason
     afk_reason = None
-    await event.reply(append_watermark_to_message("👋 I am back now."))
-    print("AFK mode disabled.")
+    await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("👋 I am back now.")), parse_mode='html')
+    logging.info("AFK mode disabled.")
 
 @client.on(events.NewMessage(pattern='.prajurit', outgoing=True))
 async def show_help(event):
     help_text = (
-        "**Siap Kaisar Udin👑, saya siap menjalankan perintah:**\n"
-        ".gcast - Perintah ini untuk menjalankan penyerbuan ke grup.\n"
-        ".hancurkan - Perintah ini untuk menghancurkan grup (menambahkan ke daftar blokir).\n"
-        ".addqr - Perintah ini untuk menyimpan kode QR.\n"
-        ".getqr - Perintah ini untuk mendapatkan kode QR yang disimpan.\n"
-        ".afk <reason> - Perintah ini untuk AFK.\n"
-        ".back - Perintah ini untuk kembali dari AFK.\n"
-        ".bc-error <task_id> - Perintah ini untuk melihat daftar grup yang gagal dikirimi pesan.\n"
-        ".cok - Ini adalah umpatan atas kesalahan saya, wahai Kaisar👑.\n"
-        f"\n{WATERMARK_TEXT}"
+        "<b>Siap Kaisar 👑, saya siap menjalankan perintah:</b>\n\n"
+        "<i>.gcast</i> - Perintah ini untuk menjalankan penyerbuan ke grup.\n"
+        "<i>.hancurkan</i> - Perintah ini untuk menghancurkan grup (menambahkan ke daftar blokir).\n"
+        "<i>.addqr</i> - Perintah ini untuk menyimpan kode QR.\n"
+        "<i>.getqr</i> - Perintah ini untuk mendapatkan kode QR yang disimpan.\n"
+        "<i>.afk</i> <reason> - Perintah ini untuk AFK.\n"
+        "<i>.back</i> - Perintah ini untuk kembali dari AFK.\n"
+        "<i>.bc-error</i> <task_id> - Perintah ini untuk melihat daftar grup yang gagal dikirimi pesan.\n"
+        "<i>.cok</i> - Ini adalah umpatan atas kesalahan saya, wahai Kaisar👑.\n"
+        f"\n<i>Bot ini dikembangkan oleh <b>Kaisar Udin👑</b></i>"
     )
-    await event.reply(help_text)
+    await client.send_message(event.chat_id, format_as_blockquote(help_text), parse_mode='html')
 
 @client.on(events.NewMessage(pattern='.cok', outgoing=True))
 async def ping(event):
     start = datetime.now()
-    await event.reply(append_watermark_to_message("🙏🏻 Maafkan prajuritmu yang lalai ini Kaisarku👑"))
+    await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("🙏🏻 Maafkan prajuritmu yang lalai ini Kaisarku👑")), parse_mode='html')
     end = datetime.now()
     latency = (end - start).total_seconds() * 1000
-    await event.reply(append_watermark_to_message(f"🌏 Total keseluruhan para pasukan yang siap bertempur: {latency:.2f} prajurit"))
+    await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message(f"⚔️ Total keseluruhan para pasukan yang siap bertempur: {latency:.2f} prajurit.")), parse_mode='html')
 
 async def run_bot():
     await main()
-    print("Bot is running...")
+    logging.info("Bot is running...")
     await client.run_until_disconnected()
 
 if __name__ == '__main__':
