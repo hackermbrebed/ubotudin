@@ -75,7 +75,7 @@ async def main():
 def is_device_owner(sender_id):
     return sender_id == device_owner_id
 
-@client.on(events.NewMessage(pattern='.gcast', outgoing=True))
+@client.on(events.NewMessage(pattern='.serang', outgoing=True))
 async def gcast(event):
     sender = await event.get_sender()
     if not is_device_owner(sender.id):
@@ -112,7 +112,7 @@ async def gcast(event):
             else:
                 await client.send_message(dialog.id, append_watermark_to_message(reply_message.message))
             sent_count += 1
-            await initial_message.edit(format_as_blockquote(f"Mengirim gcast... Sukses: {sent_count}, Gagal: {failed_count}"), parse_mode='html')
+            await initial_message.edit(format_as_blockquote(f"Mulai menyerang... Sukses: {sent_count}, Gagal: {failed_count}"), parse_mode='html')
             await asyncio.sleep(delay)
         except Exception as e:
             failed_count += 1
@@ -123,14 +123,14 @@ async def gcast(event):
 
     # Pesan hasil akhir
     message_text = (
-        f"⚠️ Gcast Sukses\n"
+        f"⚠️ Penyerangan Sukses\n"
         f"✅ Success: {sent_count}\n"
         f"❌ Failed: {failed_count}\n"
-        f"✉️ Type: gcast\n"
+        f"✉️ Type: Tempur\n"
         f"⚙️ Task ID: {task_id}\n"
         f"👤 Owner: {owner_name}{owner_emoji}\n"
-        f"\n"
-        f"Type .bc-error {task_id} to view failed in broadcast."
+        f"🔑Type .bc-error {task_id} to view failed in broadcast\n"
+        f"<i>Powered by <b>Kaisar Udin👑.</b></i>"
     )
     
     await client.send_message(event.chat_id, format_as_blockquote(message_text), parse_mode='html')
@@ -247,16 +247,16 @@ async def back(event):
 @client.on(events.NewMessage(pattern='.prajurit', outgoing=True))
 async def show_help(event):
     help_text = (
-        "<b>Siap Kaisar 👑, saya siap menjalankan perintah:</b>\n\n"
-        "<i>.gcast</i> - Perintah ini untuk menjalankan penyerbuan ke grup.\n"
-        "<i>.hancurkan</i> - Perintah ini untuk menghancurkan grup (menambahkan ke daftar blokir).\n"
-        "<i>.addqr</i> - Perintah ini untuk menyimpan kode QR.\n"
-        "<i>.getqr</i> - Perintah ini untuk mendapatkan kode QR yang disimpan.\n"
-        "<i>.afk</i> <reason> - Perintah ini untuk AFK.\n"
-        "<i>.back</i> - Perintah ini untuk kembali dari AFK.\n"
-        "<i>.bc-error</i> <task_id> - Perintah ini untuk melihat daftar grup yang gagal dikirimi pesan.\n"
-        "<i>.cok</i> - Ini adalah umpatan atas kesalahan saya, wahai Kaisar👑.\n"
-        f"\n<i>Bot ini dikembangkan oleh <b>Kaisar Udin👑</b></i>"
+        "<b>Wahai Kaisar 👑, saya siap menjalankan perintah:</b>\n\n"
+        "<i>🔥.serang</i> - Perintah ini untuk menjalankan penyerbuan ke grup.\n"
+        "<i>⚔️.hancurkan</i> - Perintah ini untuk menghancurkan grup (menambahkan ke daftar blokir).\n"
+        "<i>🖼️.addqr</i> - Perintah ini untuk menyimpan kode QR.\n"
+        "<i>🖼️.getqr</i> - Perintah ini untuk mendapatkan kode QR yang disimpan.\n"
+        "<i>🤖.afk</i> <reason> - Perintah ini untuk AFK.\n"
+        "<i>💣.back</i> - Perintah ini untuk kembali dari AFK.\n"
+        "<i>🔑.bc-error</i> <task_id> - Perintah ini untuk melihat daftar grup yang gagal dikirimi pesan.\n"
+        "<i>🗿.cok</i> - Ini adalah umpatan atas kesalahan saya, wahai Kaisar👑.\n"
+        f"\n<i>Powered by <b>Kaisar Udin👑</b></i>"
     )
     await client.send_message(event.chat_id, format_as_blockquote(help_text), parse_mode='html')
 
