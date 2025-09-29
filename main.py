@@ -92,11 +92,9 @@ async def gcast(event):
     failed_count = 0
     delay = 3
     task_id = generate_task_id()
-    owner_name = "" # Nama pemilik
-    owner_emoji = "" # Emoji mahkota
     
     # Pesan status awal
-    initial_message = await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message(f"Perintah {owner_name}{owner_emoji} sedang dijalankan")), parse_mode='html')
+    initial_message = await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message(f"𝐏𝐞𝐫𝐢𝐧𝐭𝐚𝐡 𝐬𝐞𝐝𝐚𝐧𝐠 𝐝𝐢𝐣𝐚𝐥𝐚𝐧𝐤𝐚𝐧.")), parse_mode='html')
     
     groups = [dialog async for dialog in client.iter_dialogs() if dialog.is_group]
     failed_groups_list = []
@@ -112,7 +110,7 @@ async def gcast(event):
             else:
                 await client.send_message(dialog.id, append_watermark_to_message(reply_message.message))
             sent_count += 1
-            await initial_message.edit(format_as_blockquote(f"Mulai menyerang... Sukses: {sent_count}, Gagal: {failed_count}"), parse_mode='html')
+            await initial_message.edit(format_as_blockquote(f"𝐌𝐮𝐥𝐚𝐢 𝐦𝐞𝐧𝐲𝐞𝐫𝐚𝐧𝐠... 𝐒𝐮𝐤𝐬𝐞𝐬: {sent_count}, 𝐆𝐚𝐠𝐚𝐥: {failed_count}"), parse_mode='html')
             await asyncio.sleep(delay)
         except Exception as e:
             failed_count += 1
@@ -177,10 +175,10 @@ async def blacklist_group(event):
     group_id = event.chat_id
     if group_id not in blacklisted_groups:
         blacklisted_groups.append(group_id)
-        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("💣 Grup ini sudah dihancurkan Kaisar👑, sekarang grup ini tidak akan dikirim gikes.")), parse_mode='html')
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("💣 𝐆𝐫𝐮𝐩 𝐢𝐧𝐢 𝐬𝐮𝐝𝐚𝐡 𝐝𝐢𝐡𝐚𝐧𝐜𝐮𝐫𝐤𝐚𝐧 𝐨𝐥𝐞𝐡 𝐊𝐚𝐢𝐬𝐚𝐫👑, 𝐬𝐞𝐤𝐚𝐫𝐚𝐧𝐠 𝐠𝐫𝐮𝐩 𝐢𝐧𝐢 𝐭𝐢𝐝𝐚𝐤 𝐚𝐤𝐚𝐧 𝐝𝐢𝐤𝐢𝐫𝐢𝐦 𝐠𝐢𝐤𝐞𝐬.")), parse_mode='html')
     else:
         blacklisted_groups.remove(group_id)
-        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("☀️ Grup ini berhasil dibangun kembali Kaisar👑.")), parse_mode='html')
+        await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message("☀️ 𝐆𝐫𝐮𝐩 𝐢𝐧𝐢 𝐛𝐞𝐫𝐡𝐚𝐬𝐢𝐥 𝐝𝐢𝐛𝐚𝐧𝐠𝐮𝐧 𝐤𝐞𝐦𝐛𝐚𝐥𝐢 𝐨𝐥𝐞𝐡 𝐊𝐚𝐢𝐬𝐚𝐫👑.")), parse_mode='html')
 
 @client.on(events.NewMessage(pattern='.addqr', outgoing=True))
 async def add_qr(event):
