@@ -94,7 +94,7 @@ async def gcast(event):
     task_id = generate_task_id()
     
     # Pesan status awal
-    initial_message = await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message(f"𝐏𝐞𝐫𝐢𝐧𝐭𝐚𝐡 𝐬𝐞𝐝𝐚𝐧𝐠 𝐝𝐢𝐣𝐚𝐥𝐚𝐧𝐤𝐚𝐧.")), parse_mode='html')
+    initial_message = await client.send_message(event.chat_id, format_as_blockquote(append_watermark_to_message(f"ᴘᴇʀɪɴᴛᴀʜ ꜱᴇᴅᴀɴɢ ᴅɪᴊᴀʟᴀɴᴋᴀɴ.")), parse_mode='html')
     
     groups = [dialog async for dialog in client.iter_dialogs() if dialog.is_group]
     failed_groups_list = []
@@ -110,7 +110,7 @@ async def gcast(event):
             else:
                 await client.send_message(dialog.id, append_watermark_to_message(reply_message.message))
             sent_count += 1
-            await initial_message.edit(format_as_blockquote(f"𝐌𝐮𝐥𝐚𝐢 𝐦𝐞𝐧𝐲𝐞𝐫𝐚𝐧𝐠... 𝐒𝐮𝐤𝐬𝐞𝐬: {sent_count}, 𝐆𝐚𝐠𝐚𝐥: {failed_count}"), parse_mode='html')
+            await initial_message.edit(format_as_blockquote(f"ᴍᴜʟᴀɪ ᴍᴇɴʏᴇʀᴀɴɢ... ꜱᴜᴋꜱᴇꜱ: {sent_count}, ɢᴀɢᴀʟ: {failed_count}"), parse_mode='html')
             await asyncio.sleep(delay)
         except Exception as e:
             failed_count += 1
@@ -121,13 +121,13 @@ async def gcast(event):
 
     # Pesan hasil akhir
     message_text = (
-        f"⚔️ 𝐏𝐞𝐧𝐲𝐞𝐫𝐚𝐧𝐠𝐚𝐧 𝐒𝐮𝐤𝐬𝐞𝐬 𝐓𝐮𝐚𝐧\n"
-        f"𝘣𝘦𝘳𝘪𝘬𝘶𝘵 𝘥𝘦𝘵𝘢𝘪𝘭𝘯𝘺𝘢:\n\n"
-        f"✅ 𝐊𝐞𝐦𝐞𝐧𝐚𝐧𝐠𝐚𝐧: {sent_count}\n"
-        f"❌ 𝐊𝐞𝐤𝐚𝐥𝐚𝐡𝐚𝐧: {failed_count}\n"
-        f"✉️ 𝐓𝐢𝐩𝐞: 𝐓𝐚𝐰𝐮𝐫𝐚𝐧\n"
-        f"⚙️ 𝐓𝐚𝐬𝐤 𝐈𝐃: {task_id}\n\n"
-        f"𝘗𝘰𝘸𝘦𝘳𝘦𝘥 𝘣𝘰𝘵 𝘣𝘺 𝕂𝕒𝕚𝕤𝕒𝕣 𝕌𝕕𝕚𝕟👑"
+        f"⚔️ ᴘᴇɴʏᴇʀᴀɴɢᴀɴ ꜱᴜᴋꜱᴇꜱ ʙᴇꜱᴀʀ\n"
+        f"𝘥𝘦𝘵𝘢𝘪𝘭:\n\n"
+        f"✅ ᴋᴇᴍᴇɴᴀɴɢᴀɴ: {sent_count}\n"
+        f"❌ ᴋᴇᴋᴀʟᴀʜᴀɴ: {failed_count}\n"
+        f"✉️ ᴛɪᴘᴇ: 𝐓𝐚𝐰𝐮𝐫𝐚𝐧\n"
+        f"⚙️ ᴛᴀꜱᴋ ɪᴅ: {task_id}\n\n"
+        f"<blockquote>𝘗𝘰𝘸𝘦𝘳𝘦𝘥 𝘣𝘰𝘵 𝘣𝘺 𝕂𝕒𝕚𝕤𝕒𝕣 𝕌𝕕𝕚𝕟👑</blockquote>"
     )
     
     await client.send_message(event.chat_id, format_as_blockquote(message_text), parse_mode='html')
