@@ -133,11 +133,13 @@ async def gcast(event):
         f"   ⚙️ ᴛᴀꜱᴋ ɪᴅ : {task_id}\n"
         f"𝘗𝘰𝘸𝘦𝘳𝘦𝘥 𝘣𝘰𝘵 𝘣𝘺 𝕂𝕒𝕚𝕤𝕒𝕣 𝕌𝕕𝕚𝕟👑"
     )
+
+    spoiler_message_text = f"<tg-spoiler>{message_text}</tg-spoiler>"
     
     # Mengirim pesan hasil akhir sebagai balasan ke perintah .serang
     await client.send_message(
         event.chat_id, 
-        format_as_blockquote(message_text), 
+        format_as_blockquote(spoiler_message_text), 
         parse_mode='html', 
         # Tambahkan argumen reply_to
         reply_to=command_message_id
