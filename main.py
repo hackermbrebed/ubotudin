@@ -137,6 +137,8 @@ async def gcast(event):
     result_blockquote = format_as_blockquote(main_result_text)
 
     footer_blockquote = format_as_blockquote(footer_text)
+
+    final_message_content = f"{result_blockquote}\n{footer_blockquote}"
     
     await client.send_message(
         event.chat_id, 
