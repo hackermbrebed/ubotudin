@@ -134,7 +134,7 @@ async def gcast(event):
         f"𝘗𝘰𝘸𝘦𝘳𝘦𝘥 𝘣𝘰𝘵 𝘣𝘺 𝕂𝕒𝕚𝕤𝕒𝕣 𝕌𝕕𝕚𝕟👑"
     )
 
-    spoiler_message_text = f"<tg-spoiler>{message_text}</tg-spoiler>"
+    spoiler_message_text = (f"<tg-spoiler>{message_text}</tg-spoiler>", parse_mode=ParseMode.HTML)
     
     # Mengirim pesan hasil akhir sebagai balasan ke perintah .serang
     await client.send_message(
