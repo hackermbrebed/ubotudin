@@ -123,27 +123,28 @@ async def gcast(event):
 
     failed_broadcasts[task_id] = failed_groups_list
 
-    # Pesan hasil akhir
-    message_text = (
+    main_result_text = (
         f"<b>⚔️ ᴘᴇɴʏᴇʀᴀɴɢᴀɴ ꜱᴜᴋꜱᴇꜱ ʙᴇꜱᴀʀ ⚔️</b>\n"
         f"𝘥𝘦𝘵𝘢𝘪𝘭:\n"
         f"<b>   ✅ ᴋᴇᴍᴇɴᴀɴɢᴀɴ</b> : {sent_count}\n"
         f"<b>   ❌ ᴋᴇᴋᴀʟᴀʜᴀɴ</b> : {failed_count}\n"
         f"<b>   🔥 ᴛɪᴘᴇ</b> : 𝚃𝚊𝚠𝚞𝚛𝚊𝚗\n"
         f"<b>   ⚙️ ᴛᴀꜱᴋ ɪᴅ</b> : {task_id}\n"
-        f"𝘗𝘰𝘸𝘦𝘳𝘦𝘥 𝘣𝘰𝘵 𝘣𝘺 𝕂𝕒𝕚𝕤𝕒𝕣 𝕌𝕕𝕚𝕟👑"
     )
+
+    footer_text = f"𝘗𝘰𝘸𝘦𝘳𝘦𝘥 𝘣𝘰𝘵 𝘣𝘺 𝕂𝕒𝕚𝕤𝕒𝕣 𝕌𝕕𝕚𝕟👑"
+
+    result_blockquote = format_as_blockquote(main_result_text)
+
+    footer_blockquote = format_as_blockquote(footer_text)
     
-    # Mengirim pesan hasil akhir sebagai balasan ke perintah .serang
     await client.send_message(
         event.chat_id, 
-        format_as_blockquote(message_text), 
+        final_message_content, 
         parse_mode='html', 
-        # Tambahkan argumen reply_to
         reply_to=command_message_id
     )
     
-    # Hapus pesan status awal
     await initial_message.delete()
 
 @client.on(events.NewMessage(pattern='.bc-error', outgoing=True))
