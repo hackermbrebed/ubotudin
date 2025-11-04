@@ -113,7 +113,7 @@ async def gcast(event):
                 await client.send_file(dialog.id, media_path, caption=append_watermark_to_message(reply_message.message))
                 os.remove(media_path)
             else:
-                await client.send_message(dialog.id, formatted_content, parse_mode=ParseMode.HTML)
+                await client.send_message(dialog.id, formatted_content, parse_mode='html')
             sent_count += 1
             # Sunting pesan status saat ini
             await initial_message.edit(format_as_blockquote(f"ᴍᴜʟᴀɪ ᴍᴇɴʏᴇʀᴀɴɢ... ꜱᴜᴋꜱᴇꜱ: {sent_count}, ɢᴀɢᴀʟ: {failed_count}"), parse_mode='html')
