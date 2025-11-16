@@ -76,7 +76,7 @@ async def main():
 def is_device_owner(sender_id):
     return sender_id == device_owner_id
 
-@client.on(events.NewMessage(pattern='.serang', outgoing=True))
+@client.on(events.NewMessage(pattern='.gcast', outgoing=True))
 async def gcast(event):
     sender = await event.get_sender()
     # Menangkap ID pesan untuk reply di akhir
@@ -126,11 +126,11 @@ async def gcast(event):
     failed_broadcasts[task_id] = failed_groups_list
 
     main_result_text = (
-        f"<b>⚔️ ᴘᴇɴʏᴇʀᴀɴɢᴀɴ ꜱᴜᴋꜱᴇꜱ ʙᴇꜱᴀʀ ⚔️</b>\n"
+        f"<b>⚔️ ʙᴏɴᴊᴏʟ ᴅᴏʏᴀɴ ᴛᴇᴍᴘᴇᴋ ⚔️</b>\n"
         f"𝘥𝘦𝘵𝘢𝘪𝘭:\n"
-        f"<b>   ✅ ᴋᴇᴍᴇɴᴀɴɢᴀɴ</b> : {sent_count}\n"
-        f"<b>   ❌ ᴋᴇᴋᴀʟᴀʜᴀɴ</b> : {failed_count}\n"
-        f"<b>   🔥 ᴛɪᴘᴇ</b> : 𝚃𝚊𝚠𝚞𝚛𝚊𝚗\n"
+        f"<b>   ✅ ʙᴏɴᴊᴏʟ</b> : {sent_count}\n"
+        f"<b>   ❌ ᴋᴜᴛ</b> : {failed_count}\n"
+        f"<b>   🔥 ᴜᴅɪɴ</b> : 𝚃𝚊𝚠𝚞𝚛𝚊𝚗\n"
         f"<b>   ⚙️ ᴛᴀꜱᴋ ɪᴅ</b> : {task_id}\n"
     )
 
